@@ -10,16 +10,82 @@ on:
 
 jobs:
 
-  job1:
-    name: Job1
+  child1:
+    name: Child job 1
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@main
-        with:
-          repository: 'NaokiHori/SimpleNavierStokesSolver'
-          ref: main
-      - name: check contents
+      - name: Setup headless display
+        uses: pyvista/setup-headless-display-action@v1
+      - name: Install python dependencies
         run: |
+          python -m pip install --upgrade pip
+          pip install pyvista
+      - name: Use PyVista
+        run: |
+          python main.py
+      - name: Upload artifact
+        uses: actions/upload-artifact@main
+        with:
+          name: job1
+          path: sphere.png
+
+  child2:
+    name: Child job 2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@main
+      - name: Setup headless display
+        uses: pyvista/setup-headless-display-action@v1
+      - name: Install python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyvista
+      - name: Use PyVista
+        run: |
+          python main.py
+      - name: Upload artifact
+        uses: actions/upload-artifact@main
+        with:
+          name: job2
+          path: sphere.png
+
+  parent:
+    name: Parent job
+    runs-on: ubuntu-latest
+    needs: [child1, child2]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@main
+      - name: Download artifact
+        uses: actions/download-artifact@main
+        with:
+          name: job1
+          path: job1
+      - name: Download artifact
+        uses: actions/download-artifact@main
+        with:
+          name: job2
+          path: job2
+      - name: Install python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install Pillow
+      - name: Check contents
+        run: |
+          pwd
+          echo ${HOME}
           ls -l
+          ls -l job1
+          ls -l job2
+      - name: Merge
+        run: |
+          python merge.py job1/sphere.png job2/sphere.png
+      - name: Upload artifact
+        uses: actions/upload-artifact@main
+        with:
+          name: merged
+          path: merged.png
 

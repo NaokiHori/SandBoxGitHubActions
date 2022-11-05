@@ -1,0 +1,25 @@
+name: Test1
+
+on:
+
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/test1.yml
+
+jobs:
+
+  job1:
+    name: Job1
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@main
+        with:
+          repository: 'NaokiHori/SimpleNavierStokesSolver'
+          ref: main
+      - name: check contents
+        run: |
+          ls -l
+

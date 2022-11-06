@@ -14,43 +14,45 @@ jobs:
     name: Child job 1
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@main
-      - name: Setup headless display
-        uses: pyvista/setup-headless-display-action@v1
-      - name: Install python dependencies
+      - name: Install libraries
         run: |
-          python -m pip install --upgrade pip
-          pip install pyvista
-      - name: Use PyVista
+          sudo apt-get update && \
+          sudo apt-get install wget
+      - name: Check commit hash
         run: |
-          python main.py
+          echo ${{ github.sha }}
+      - name: Fetch image
+        run: |
+          wget \
+            https://naokihori.github.io/SimpleDecomp/_images/default.png \
+            --output-document=image.png
       - name: Upload artifact
         uses: actions/upload-artifact@main
         with:
-          name: job1
-          path: sphere.png
+          name: ${{ github.sha }}-job1
+          path: image.png
 
   child2:
     name: Child job 2
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@main
-      - name: Setup headless display
-        uses: pyvista/setup-headless-display-action@v1
-      - name: Install python dependencies
+      - name: Install libraries
         run: |
-          python -m pip install --upgrade pip
-          pip install pyvista
-      - name: Use PyVista
+          sudo apt-get update && \
+          sudo apt-get install wget
+      - name: Check commit hash
         run: |
-          python main.py
+          echo ${{ github.sha }}
+      - name: Fetch image
+        run: |
+          wget \
+            https://naokihori.github.io/SimpleDecomp/_images/default1.png \
+            --output-document=image.png
       - name: Upload artifact
         uses: actions/upload-artifact@main
         with:
-          name: job2
-          path: sphere.png
+          name: ${{ github.sha }}-job2
+          path: image.png
 
   parent:
     name: Parent job
@@ -60,41 +62,48 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@main
       - name: Download artifact
-        uses: actions/download-artifact@main
-        with:
-          name: job1
-          path: job1
-      - name: Download artifact
+        id: download-artifact
         uses: dawidd6/action-download-artifact@v2
         with:
-          workflow: test1.yml
-          workflow_conclusion: success
-          name: job2
-          path: job2
-          repo: ${{ github.repository }}
+          github_token: ${{ secrets.MY_GITHUB_TOKEN_SANDBOX }}
+          # workflow: test1.yml
           if_no_artifact_found: fail
-      # - name: Download artifact
-      #   uses: actions/download-artifact@main
-      #   with:
-      #     name: job2
-      #     path: job2
-      - name: Install python dependencies
+      - name: Check current directory
         run: |
-          python -m pip install --upgrade pip
-          pip install Pillow
-      - name: Check contents
-        run: |
-          pwd
-          echo ${HOME}
           ls -l
-          ls -l job1
-          ls -l job2
-      - name: Merge
-        run: |
-          python merge.py job1/sphere.png job2/sphere.png
-      - name: Upload artifact
-        uses: actions/upload-artifact@main
-        with:
-          name: merged
-          path: merged.png
+      # - name: Download artifact
+      #   uses: dawidd6/action-download-artifact@v2
+      #   with:
+      #     workflow: test1.yml
+      #     name: ${{ github.sha }}-job1
+      #     path: job1
+      #     repo: ${{ github.repository }}
+      #     if_no_artifact_found: fail
+      # - name: Download artifact
+      #   uses: dawidd6/action-download-artifact@v2
+      #   with:
+      #     workflow: test1.yml
+      #     name: ${{ github.sha }}-job2
+      #     path: job2
+      #     repo: ${{ github.repository }}
+      #     if_no_artifact_found: fail
+      # - name: Install python dependencies
+      #   run: |
+      #     python -m pip install --upgrade pip
+      #     pip install Pillow
+      # - name: Check contents
+      #   run: |
+      #     pwd
+      #     echo ${HOME}
+      #     ls -l
+      #     ls -l job1
+      #     ls -l job2
+      # - name: Merge
+      #   run: |
+      #     python merge.py job1/image.png job2/image.png
+      # - name: Upload artifact
+      #   uses: actions/upload-artifact@main
+      #   with:
+      #     name: merged
+      #     path: merged.png
 

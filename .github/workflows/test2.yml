@@ -1,0 +1,63 @@
+name: Test2
+
+on:
+
+  workflow_run:
+    workflows: [Test1]
+    types:
+      - completed
+
+jobs:
+
+  parent:
+    name: Parent job
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@main
+      - name: Download artifact
+        id: download-artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{ secrets.MY_GITHUB_TOKEN_SANDBOX }}
+          workflow: test1.yml
+          if_no_artifact_found: fail
+      - name: Check current directory
+        run: |
+          ls -l
+      # - name: Download artifact
+      #   uses: dawidd6/action-download-artifact@v2
+      #   with:
+      #     workflow: test1.yml
+      #     name: ${{ github.sha }}-job1
+      #     path: job1
+      #     repo: ${{ github.repository }}
+      #     if_no_artifact_found: fail
+      # - name: Download artifact
+      #   uses: dawidd6/action-download-artifact@v2
+      #   with:
+      #     workflow: test1.yml
+      #     name: ${{ github.sha }}-job2
+      #     path: job2
+      #     repo: ${{ github.repository }}
+      #     if_no_artifact_found: fail
+      # - name: Install python dependencies
+      #   run: |
+      #     python -m pip install --upgrade pip
+      #     pip install Pillow
+      # - name: Check contents
+      #   run: |
+      #     pwd
+      #     echo ${HOME}
+      #     ls -l
+      #     ls -l job1
+      #     ls -l job2
+      # - name: Merge
+      #   run: |
+      #     python merge.py job1/image.png job2/image.png
+      # - name: Upload artifact
+      #   uses: actions/upload-artifact@main
+      #   with:
+      #     name: merged
+      #     path: merged.png
+
